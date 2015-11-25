@@ -1,0 +1,31 @@
+- name: Download bzip2-{{ psplibraries_bzip2_version }}
+  get_url:
+    url=http://www.bzip.org/{{ psplibraries_bzip2_version }}/bzip2-{{ psplibraries_bzip2_version }}.tar.gz
+    dest={{ psplibraries_tmp_path }}
+
+- name: Extract bzip2-{{ psplibraries_bzip2_version }}
+  unarchive:
+    src={{ psplibraries_tmp_path }}/bzip2-{{ psplibraries_bzip2_version }}.tar.gz
+    dest={{ psplibraries_tmp_path }}
+    copy=no
+
+- name: Apply bzip2-{{ psplibraries_bzip2_version }}-PSP patch
+  patch:
+    src=bzip2-{{ psplibraries_bzip2_version }}-PSP.patch
+    basedir={{ psplibraries_tmp_path }}/bzip2-{{ psplibraries_bzip2_version }}
+    strip=1
+
+- name: Compile bzip2-{{ psplibraries_bzip2_version }}
+  shell: make -j {{ ansible_processor_vcpus }}
+    chdir={{ psplibraries_tmp_path }}/sdk/angelscript/projects/cmake
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Install bzip2-{{ psplibraries_bzip2_version }}
+  sudo: yes
+  shell: chdir={{ psplibraries_tmp_path }}/bzip2-{{ psplibraries_bzip2_version }} make -j {{ ansible_processor_vcpus }} install
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Clean bzip2-{{ psplibraries_bzip2_version }}
+  file: path={{ psplibraries_tmp_path }}/bzip2-{{ psplibraries_bzip2_version }} state=absent
