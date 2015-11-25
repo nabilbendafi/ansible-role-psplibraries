@@ -1,0 +1,19 @@
+- name: Create psp-cmake directories
+  sudo: yes
+  file:
+    path={{ psp_prefix }}/share/cmake-2.8/Modules/Platform
+    state=directory
+
+- name: Install toolchain script
+  sudo: yes
+  copy:
+    src=PSP.cmake
+    dest={{ psp_prefix }}/share/cmake-2.8/Modules/Platform
+    mode=644
+
+- name: Install psp-cmake
+  sudo: yes
+  copy:
+    src=psp-cmake
+    dest={{ pspdev_path }}/bin
+    mode=755

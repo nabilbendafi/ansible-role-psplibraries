@@ -1,2 +1,19 @@
----
-# tasks file for psplibraries
+- name: Get PSP prefix of PSP-hosted software
+  shell: . /etc/profile; psp-config --psp-prefix
+  register: psp_prefix_result
+
+- name: Get PSP base install directory
+  shell: . /etc/profile;  psp-config --pspdev-path
+  register: pspdev_path_result
+
+- name: Get PSP base directory of PSPSDK
+  shell: . /etc/profile;  psp-config --pspsdk-path
+  register: pspsdk_path_result
+
+- name: Set the facts for the other tasks
+  set_fact:
+    psp_prefix='{{ psp_prefix_result.stdout }}'
+    pspdev_path='{{ pspdev_path_result.stdout }}'
+    pspsdk_path='{{ pspsdk_path_result.stdout }}'
+
+- include: psp-cmake.yml
