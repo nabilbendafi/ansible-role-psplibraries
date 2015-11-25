@@ -17,3 +17,4 @@
     pspsdk_path='{{ pspsdk_path_result.stdout }}'
 
 - include: psp-cmake.yml
+- include: angelscript.yml

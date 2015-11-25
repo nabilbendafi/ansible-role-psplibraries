@@ -1,0 +1,30 @@
+- name: Download angelscript_{{ psplibraries_angelscript_version }}
+  get_url:
+    url=http://www.angelcode.com/angelscript/sdk/files/angelscript_{{ psplibraries_angelscript_version }}.zip
+    dest={{ psplibraries_tmp_path }}
+
+- name: Extract angelscript_{{ psplibraries_angelscript_version }}
+  unarchive:
+    src={{ psplibraries_tmp_path }}/angelscript_{{ psplibraries_angelscript_version }}.zip
+    dest={{ psplibraries_tmp_path }}
+    copy=no
+
+- name: Configure angelscript_{{ psplibraries_angelscript_version }}
+  shell: . /etc/profile; psp-cmake -D CMAKE_INSTALL_PREFIX={{ psp_prefix }} .
+    chdir={{ psplibraries_tmp_path }}/sdk/angelscript/projects/cmake
+
+- name: Compile angelscript_{{ psplibraries_angelscript_version }}
+  shell: make -j {{ ansible_processor_vcpus }}
+    chdir={{ psplibraries_tmp_path }}/sdk/angelscript/projects/cmake
+
+- name: Install angelscript_{{ psplibraries_angelscript_version }} headers
+  sudo: yes
+  command: cp {{ psplibraries_tmp_path }}/sdk/angelscript/include/{{ item }} {{ psp_prefix }}/include
+  with_items:
+    - 'angelscript.h'
+
+- name: Install angelscript_{{ psplibraries_angelscript_version }} library
+  sudo: yes
+  command: cp {{ psplibraries_tmp_path }}/sdk/angelscript/lib/{{ item }} {{ psp_prefix }}/lib
+  with_items:
+    - 'libAngelscript.a'
