@@ -19,3 +19,4 @@
 - include: psp-cmake.yml
 - include: angelscript.yml
 - include: bzip2.yml
+- include: expat.yml
