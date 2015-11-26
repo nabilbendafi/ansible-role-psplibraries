@@ -9,3 +9,5 @@ psplibraries_expat_version: '2.1.0'
 psplibraries_libpng_version: '1.5.7'
 
 psplibraries_libyaml_version: '0.1.4'
+
+psplibraries_pthreads_emb_version: '1.0'
