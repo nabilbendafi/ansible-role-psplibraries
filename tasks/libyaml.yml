@@ -1,0 +1,39 @@
+- name: Download libyaml-{{ psplibraries_libyaml_version }}
+  get_url:
+    url=http://pyyaml.org/download/libyaml/yaml-{{ psplibraries_libyaml_version }}.tar.gz
+    dest={{ psplibraries_tmp_path }}
+
+- name: Extract libyaml-{{ psplibraries_libyaml_version }}
+  unarchive:
+    src={{ psplibraries_tmp_path }}/yaml-{{ psplibraries_libyaml_version }}.tar.gz
+    dest={{ psplibraries_tmp_path }}
+    copy=no
+
+- name: Copy config.sub file
+  copy:
+    src=config.sub
+    dest={{ psplibraries_tmp_path }}/yaml-{{ psplibraries_libyaml_version }}/config/config.sub
+
+- name: Configure libyaml-{{ psplibraries_libyaml_version }}
+  shell: chdir={{ psplibraries_tmp_path }}/yaml-{{ psplibraries_libyaml_version }} ./configure --host={{ target }} --prefix={{ pspdev_path }}
+  environment:
+    LDFLAGS: -L{{ pspsdk_path }}/lib -L{{ psp_prefix }}/lib -lc -lpspuser
+    LIBS: -lc -lpspuser
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Compile libyaml-{{ psplibraries_libyaml_version }}
+  shell: make -j {{ ansible_processor_vcpus }}
+    chdir={{ psplibraries_tmp_path }}/yaml-{{ psplibraries_libyaml_version }}
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Install libyaml-{{ psplibraries_libyaml_version }}
+  sudo: yes
+  shell: chdir={{ psplibraries_tmp_path }}/yaml-{{ psplibraries_libyaml_version }} make -j {{ ansible_processor_vcpus }} install; make clean
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Clean libyaml-{{ psplibraries_libyaml_version }}
+  file:
+    path={{ psplibraries_tmp_path }}/yaml-{{ psplibraries_libyaml_version }}
+    state=absent

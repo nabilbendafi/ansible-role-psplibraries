@@ -21,3 +21,4 @@
 - include: bzip2.yml
 - include: expat.yml
 - include: libpng.yml
+- include: libyaml.yml
