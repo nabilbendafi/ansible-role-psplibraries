@@ -1,0 +1,66 @@
+- name: Download libmikmod-{{ psplibraries_libmikmod_version }}
+  get_url:
+    url=http://downloads.sourceforge.net/project/mikmod/outdated_versions/libmikmod/{{ psplibraries_libmikmod_version }}/libmikmod-{{ psplibraries_libmikmod_version }}-DONTUSE.tar.gz
+    dest={{ psplibraries_tmp_path }}
+
+- name: Extract libmikmod-{{ psplibraries_libmikmod_version }}
+  unarchive:
+    src={{ psplibraries_tmp_path }}/libmikmod-{{ psplibraries_libmikmod_version }}-DONTUSE.tar.gz
+    dest={{ psplibraries_tmp_path }}
+    copy=no
+
+- name: Apply libmikmod-{{ psplibraries_libmikmod_version }}-PSP patch
+  patch:
+    src=libmikmod-{{ psplibraries_libmikmod_version }}-PSP.patch
+    basedir={{ psplibraries_tmp_path }}/libmikmod-{{ psplibraries_libmikmod_version }}
+    strip=1
+
+- name: Autotools for libmikmod-{{ psplibraries_libmikmod_version }}
+  shell: aclocal --force
+    chdir={{ psplibraries_tmp_path }}/libmikmod-{{ psplibraries_libmikmod_version }}
+
+- name: GLibtool for libmikmod-{{ psplibraries_libmikmod_version }}
+  shell: glibtoolize --force
+    chdir={{ psplibraries_tmp_path }}/libmikmod-{{ psplibraries_libmikmod_version }}
+  when: ansible_os_family == "Darwin"
+
+- name: Libtool for libmikmod-{{ psplibraries_libmikmod_version }}
+  shell: libtoolize --force
+    chdir={{ psplibraries_tmp_path }}/libmikmod-{{ psplibraries_libmikmod_version }}
+  when: ansible_os_family == "Debian"
+
+- name: Autotools for libmikmod-{{ psplibraries_libmikmod_version }}
+  shell: "{{ item }} chdir={{ psplibraries_tmp_path }}/libmikmod-{{ psplibraries_libmikmod_version }}"
+  with_items:
+    - 'aclocal --force'
+    - 'autoconf --force'
+    - 'autoheader --force'
+    - 'automake --add-missing'
+
+- name: Configure libmikmod-{{ psplibraries_libmikmod_version }}
+  shell: ./configure --host={{ target }} --prefix={{ pspdev_path }} --disable-esd --enable-osx=no
+    chdir={{ psplibraries_tmp_path }}/libmikmod-{{ psplibraries_libmikmod_version }}
+  environment:
+    CONFIG_SHELL: /bin/bash
+    LDFLAGS: -L{{ pspsdk_path }}/lib -L{{ psp_prefix }}/lib -lc -lpspuser
+    LIBS: -lc -lpspuser
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Compile libmikmod-{{ psplibraries_libmikmod_version }}
+  shell: make -j {{ ansible_processor_vcpus }}
+    chdir={{ psplibraries_tmp_path }}/libmikmod-{{ psplibraries_libmikmod_version }}
+  environment:
+    SHELL: /bin/bash
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Install libmikmod-{{ psplibraries_libmikmod_version }}
+  sudo: yes
+  shell:  make -j {{ ansible_processor_vcpus }} install
+    chdir={{ psplibraries_tmp_path }}/libmikmod-{{ psplibraries_libmikmod_version }}
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Clean libmikmod-{{ psplibraries_libmikmod_version }}
+  file:
+    path={{ psplibraries_tmp_path }}/libmikmod-{{ psplibraries_libmikmod_version }}
+    state=absent

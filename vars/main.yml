@@ -17,3 +17,5 @@ psplibraries_openal_version: '1.14'
 psplibraries_pixman_version: '0.24.4'
 
 psplibraries_squirrel_version: '3_0_7'
+
+psplibraries_libmikmod_version: '3.2.0'

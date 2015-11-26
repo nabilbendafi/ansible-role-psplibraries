@@ -28,3 +28,4 @@
 - include: pixman.yml
 - include: smpeg-psp.yml
 - include: squirrel.yml
+- include: libmikmod.yaml
