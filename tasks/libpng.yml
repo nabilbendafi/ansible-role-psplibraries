@@ -1,0 +1,41 @@
+- name: Download libpng-{{ psplibraries_libpng_version }}
+  get_url:
+    url=http://sourceforge.net/projects/libpng/files/libpng15/older-releases/{{ psplibraries_libpng_version }}/libpng-{{ psplibraries_libpng_version }}.tar.gz
+    dest={{ psplibraries_tmp_path }}
+
+- name: Extract libpng-{{ psplibraries_libpng_version }}
+  unarchive:
+    src={{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}.tar.gz
+    dest={{ psplibraries_tmp_path }}
+    copy=no
+
+- name: Apply libpng-{{ psplibraries_libpng_version }}-PSP patch
+  patch:
+    src=libpng-{{ psplibraries_libpng_version }}-PSP.patch
+    basedir={{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}
+    strip=1
+
+- name: Configure libpng-{{ psplibraries_libpng_version }}
+  shell: ./configure --host={{ target }} --prefix={{ pspdev_path }}
+    chdir={{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}
+  environment:
+    LDFLAGS: -L{{ pspsdk_path }}/lib -L{{ psp_prefix }}/lib -lc -lpspuser
+    LIBS: -lc -lpspuser
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Compile libpng-{{ psplibraries_libpng_version }}
+  shell: make -j {{ ansible_processor_vcpus }}
+    chdir={{ psplibraries_tmp_path }}/sdk/angelscript/projects/cmake
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Install libpng-{{ psplibraries_libpng_version }}
+  sudo: yes
+  shell: chdir={{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }} make -j {{ ansible_processor_vcpus }} install; make clean
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Clean libpng-{{ psplibraries_libpng_version }}
+  file:
+    path={{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}
+    state=absent
