@@ -27,6 +27,7 @@ Dependencies
 ------------
 
 [nabilbendafi.psptoolchain](https://github.com/nabilbendafi/ansible-role-psptoolchain)
+[nabilbendafi.psp-ports](https://github.com/nabilbendafi/ansible-role-psp-ports)
 
 License
 -------
