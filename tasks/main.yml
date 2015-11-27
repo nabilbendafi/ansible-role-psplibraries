@@ -24,3 +24,4 @@
 - include: libyaml.yml
 - include: pthreads-emb.yml
 - include: openal.yml
+- include: opentri.yml

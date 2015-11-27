@@ -1,0 +1,28 @@
+- name: Download openTRI
+  git: repo=git://github.com/SamRH/openTRI
+       dest={{ psplibraries_tmp_path }}/openTRI
+       accept_hostkey=yes
+
+- name: Compile openTRI
+  shell: make -j {{ ansible_processor_vcpus }}
+    chdir={{ psplibraries_tmp_path }}/openTRI
+  environment:
+    PNG: 1
+    FT: 1
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Install openTRI
+  sudo: yes
+  shell: make install
+    chdir={{ psplibraries_tmp_path }}/openTRI
+  environment:
+    CP: cp
+    MKDIR: mkdir
+    DOXYGEN: doxygen
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Clean openTRI
+  sudo: yes
+  file:
+    path={{ psplibraries_tmp_path }}/openTRI
+    state=absent
