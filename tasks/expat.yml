@@ -18,7 +18,8 @@
     - conftools/config.sub
 
 - name: Configure expat-{{ psplibraries_expat_version }}
-  shell: chdir={{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }} ./configure --host={{ target }} --prefix={{ pspdev_path }}
+  shell: ./configure --host={{ target }} --prefix={{ pspdev_path }}
+    chdir={{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }}
   environment:
     LDFLAGS: -L{{ pspsdk_path }}/lib -L{{ psp_prefix }}/lib -lc -lpspuser
     LIBS: -lc -lpspuser
@@ -32,7 +33,8 @@
 
 - name: Install expat-{{ psplibraries_expat_version }}
   sudo: yes
-  shell: chdir={{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }} make -j {{ ansible_processor_vcpus }} install; make clean
+  shell: make -j {{ ansible_processor_vcpus }} install; make clean
+    chdir={{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }}
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
 

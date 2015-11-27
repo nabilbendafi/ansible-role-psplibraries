@@ -31,7 +31,8 @@
 
 - name: Install libpng-{{ psplibraries_libpng_version }}
   sudo: yes
-  shell: chdir={{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }} make -j {{ ansible_processor_vcpus }} install; make clean
+  shell: make -j {{ ansible_processor_vcpus }} install; make clean
+    chdir={{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
 

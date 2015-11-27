@@ -23,9 +23,12 @@
 
 - name: Install bzip2-{{ psplibraries_bzip2_version }}
   sudo: yes
-  shell: chdir={{ psplibraries_tmp_path }}/bzip2-{{ psplibraries_bzip2_version }} make -j {{ ansible_processor_vcpus }} install
+  shell: make -j {{ ansible_processor_vcpus }} install
+    chdir={{ psplibraries_tmp_path }}/bzip2-{{ psplibraries_bzip2_version }}
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
 
 - name: Clean bzip2-{{ psplibraries_bzip2_version }}
-  file: path={{ psplibraries_tmp_path }}/bzip2-{{ psplibraries_bzip2_version }} state=absent
+  file:
+    path={{ psplibraries_tmp_path }}/bzip2-{{ psplibraries_bzip2_version }}
+    state=absent
