@@ -13,3 +13,5 @@ psplibraries_libyaml_version: '0.1.4'
 psplibraries_pthreads_emb_version: '1.0'
 
 psplibraries_openal_version: '1.14'
+
+psplibraries_pixman_version: '0.24.4'
