@@ -26,3 +26,4 @@
 - include: openal.yml
 - include: opentri.yml
 - include: pixman.yml
+- include: smpeg-psp.yml

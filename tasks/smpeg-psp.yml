@@ -1,0 +1,27 @@
+- name: Download smpeg-psp
+  git: repo=git://github.com/fungos/smpeg-psp
+       dest={{ psplibraries_tmp_path }}/smpeg-psp
+       accept_hostkey=yes
+
+- name: Disable_SDL_Swap16
+  shell: sed -i -e "s/static __inline__ Uint16 SDL_Swap16(Uint16 x)/static __inline__ Uint16 Disable_SDL_Swap16(Uint16 x)/" audio/*.cpp
+    chdir={{ psplibraries_tmp_path }}/smpeg-psp
+
+- name: Compile smpeg-psp
+  shell: make -j {{ ansible_processor_vcpus }}
+    chdir={{ psplibraries_tmp_path }}/smpeg-psp
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Install smpeg-psp
+  sudo: yes
+  shell: make install
+    chdir={{ psplibraries_tmp_path }}/smpeg-psp
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Clean smpeg-psp
+  sudo: yes
+  file:
+    path={{ psplibraries_tmp_path }}/smpeg-psp
+    state=absent
