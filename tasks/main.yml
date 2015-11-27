@@ -23,3 +23,4 @@
 - include: libpng.yml
 - include: libyaml.yml
 - include: pthreads-emb.yml
+- include: openal.yml

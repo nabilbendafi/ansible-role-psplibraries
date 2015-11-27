@@ -1,0 +1,36 @@
+- name: Download openal-{{ psplibraries_openal_version }}
+  get_url:
+    url=http://kcat.strangesoft.net/openal-releases/openal-soft-{{ psplibraries_openal_version }}.tar.bz2
+    dest={{ psplibraries_tmp_path }}
+
+- name: Extract openal-{{ psplibraries_openal_version }}
+  unarchive:
+    src={{ psplibraries_tmp_path }}/openal-soft-{{ psplibraries_openal_version }}.tar.bz2
+    dest={{ psplibraries_tmp_path }}
+    copy=no
+
+- name: Configure openal-{{ psplibraries_openal_version }}
+  shell: . /etc/profile; psp-cmake -D CMAKE_INSTALL_PREFIX={{ psp_prefix }} -D UTILS=OFF .
+    chdir={{ psplibraries_tmp_path }}/openal-soft-{{ psplibraries_openal_version }}
+
+- name: Replace memory.h with string.h
+  shell: sed -i -e "s/memory\.h/string.h/" Alc/*.c Alc/backends/*.c
+    chdir={{ psplibraries_tmp_path }}/openal-soft-{{ psplibraries_openal_version }}
+
+- name: Compile openal-{{ psplibraries_openal_version }}
+  shell: make -j {{ ansible_processor_vcpus }}
+    chdir={{ psplibraries_tmp_path }}/openal-soft-{{ psplibraries_openal_version }}
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Install openal-{{ psplibraries_openal_version }}
+  sudo: yes
+  shell: make -j {{ ansible_processor_vcpus }} install
+    chdir={{ psplibraries_tmp_path }}/openal-soft-{{ psplibraries_openal_version }}
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Clean openal-{{ psplibraries_openal_version }}
+  file:
+    path={{ psplibraries_tmp_path }}/openal-soft-{{ psplibraries_openal_version }}
+    state=absent
