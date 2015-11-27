@@ -15,3 +15,5 @@ psplibraries_pthreads_emb_version: '1.0'
 psplibraries_openal_version: '1.14'
 
 psplibraries_pixman_version: '0.24.4'
+
+psplibraries_squirrel_version: '3_0_7'

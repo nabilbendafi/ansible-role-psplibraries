@@ -1,0 +1,51 @@
+- name: Download squirrel_{{ psplibraries_squirrel_version }}
+  get_url:
+    url=http://sourceforge.net/projects/squirrel/files/squirrel_{{ psplibraries_squirrel_version }}_stable.tar.gz
+    dest={{ psplibraries_tmp_path }}
+
+- name: Extract squirrel_{{ psplibraries_squirrel_version }}
+  unarchive:
+    src={{ psplibraries_tmp_path }}/squirrel_{{ psplibraries_squirrel_version }}_stable.tar.gz
+    dest={{ psplibraries_tmp_path }}
+    copy=no
+
+- name: Apply squirrel-{{ psplibraries_squirrel_version }} patch
+  patch:
+    src=squirrel-{{ psplibraries_squirrel_version }}.patch
+    basedir={{ psplibraries_tmp_path }}/SQUIRREL3
+    strip=1
+
+- name: Compile squirrel_{{ psplibraries_squirrel_version }} squirrel
+  shell: make -C squirrel sq32 -j {{ ansible_processor_vcpus }}
+    chdir={{ psplibraries_tmp_path }}/SQUIRREL3
+  environment:
+    AR: psp-ar
+    CC: psp-gcc
+    CXX: psp-g++
+    LIBS: -lc -lpspuser
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Compile squirrel_{{ psplibraries_squirrel_version }} sqstdlib
+  shell: make -C sqstdlib sq32 -j {{ ansible_processor_vcpus }}
+    chdir={{ psplibraries_tmp_path }}/SQUIRREL3
+  environment:
+    AR: psp-ar
+    CC: psp-gcc
+    CXX: psp-g++
+    LIBS: -lc -lpspuser
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Install squirrel_{{ psplibraries_squirrel_version }} library
+  sudo: yes
+  shell: cp -v lib/*.a {{ psp_prefix }}/lib
+    chdir={{ psplibraries_tmp_path }}/SQUIRREL3
+
+- name: Install squirrel_{{ psplibraries_squirrel_version }} headers
+  sudo: yes
+  shell: cp -v include/*.h {{ psp_prefix }}/include
+    chdir={{ psplibraries_tmp_path }}/SQUIRREL3
+
+- name: Clean squirrel_{{ psplibraries_squirrel_version }}
+  file:
+    path={{ psplibraries_tmp_path }}/SQUIRREL3
+    state=absent

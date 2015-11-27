@@ -27,3 +27,4 @@
 - include: opentri.yml
 - include: pixman.yml
 - include: smpeg-psp.yml
+- include: squirrel.yml
