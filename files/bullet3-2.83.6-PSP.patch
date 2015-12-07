@@ -1,0 +1,13 @@
+--- src/CMakeLists.txt	2015-08-11 16:17:42.000000000 +0000
++++ src/CMakeLists.txt	2015-12-18 11:08:07.238124656 +0000
+@@ -1,6 +1,9 @@
+ 
+ IF(BUILD_BULLET3)
+-	SUBDIRS(  Bullet3OpenCL Bullet3Serialize/Bullet2FileLoader Bullet3Dynamics Bullet3Collision Bullet3Geometry Bullet3Common )
++	IF(NOT PSP)
++	SUBDIRS( Bullet3OpenCL )
++	ENDIF(NOT PSP)
++	SUBDIRS(  Bullet3Serialize/Bullet2FileLoader Bullet3Dynamics Bullet3Collision Bullet3Geometry Bullet3Common )
+ ENDIF(BUILD_BULLET3)
+ 
+ SUBDIRS(  BulletSoftBody BulletCollision BulletDynamics LinearMath )

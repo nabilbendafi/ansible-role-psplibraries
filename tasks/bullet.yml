@@ -1,0 +1,44 @@
+- name: Download bullet-{{ psplibraries_bullet_version }}
+  get_url:
+    url=https://github.com/bulletphysics/bullet3/archive/{{ psplibraries_bullet_version }}.tar.gz
+    dest={{ psplibraries_tmp_path }}
+
+- name: Extract bullet-{{ psplibraries_bullet_version }}
+  unarchive:
+    src={{ psplibraries_tmp_path }}/{{ psplibraries_bullet_version }}.tar.gz
+    dest={{ psplibraries_tmp_path }}
+    copy=no
+
+- name: Configure bullet-{{ psplibraries_bullet_version }}
+  shell: . /etc/profile; psp-cmake -D CMAKE_INSTALL_PREFIX={{ psp_prefix }} -D BUILD_BULLET2_DEMOS=OFF -DBUILD_OPENGL3_DEMOS=OFF .
+    chdir={{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}
+
+- name: Replace memory.h with string.h
+  shell: sed -i -e "s/memory\.h/string.h/" "{{ item }}/*.cpp" "{{ item }}/*.h"
+    chdir={{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}
+  with_items:
+    - ./src/Bullet3Common
+    - ./src/Bullet3Collision/BroadPhaseCollision
+    - ./src/Bullet3Serialize/Bullet2FileLoader
+    - ./src/BulletCollision/BroadphaseCollision
+    - ./src/LinearMath
+    - ./Extras/ConvexDecomposition
+    - ./Extras/Serialize/BulletFileLoader
+
+- name: Compile bullet-{{ psplibraries_bullet_version }}
+  shell: make -j {{ ansible_processor_vcpus }}
+    chdir={{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Install bullet-{{ psplibraries_bullet_version }}
+  sudo: yes
+  shell: make -j {{ ansible_processor_vcpus }} install
+    chdir={{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Clean bullet-{{ psplibraries_bullet_version }}
+  file:
+    path={{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}
+    state=absent

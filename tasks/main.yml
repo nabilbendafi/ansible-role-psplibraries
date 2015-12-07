@@ -29,3 +29,4 @@
 - include: smpeg-psp.yml
 - include: squirrel.yml
 - include: libmikmod.yaml
+- include: bullet.yml

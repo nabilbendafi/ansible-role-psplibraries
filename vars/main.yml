@@ -19,3 +19,5 @@ psplibraries_pixman_version: '0.24.4'
 psplibraries_squirrel_version: '3_0_7'
 
 psplibraries_libmikmod_version: '3.2.0'
+
+psplibraries_bullet_version: '2.83.6'
