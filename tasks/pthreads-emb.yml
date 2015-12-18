@@ -1,24 +1,33 @@
 - name: Download pthreads-emb
-  git: repo=git://github.com/take-cheeze/pthreads-emb
-       dest={{ psplibraries_tmp_path }}/pthreads-emb
-       accept_hostkey=yes
+  git:
+    repo: git://github.com/take-cheeze/pthreads-emb
+    dest: "{{ psplibraries_tmp_path }}/pthreads-emb"
+    accept_hostkey: yes
+    force: yes
 
 - name: Compile pthreads-emb
   shell: make -C platform/psp -j {{ ansible_processor_vcpus }}
-    chdir={{ psplibraries_tmp_path }}/pthreads-emb
+  args:
+    chdir: "{{ psplibraries_tmp_path }}/pthreads-emb"
+    creates: "{{ psplibraries_tmp_path }}/pthreads-emb/platform/psp/libpthread-psp.a"
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
 
 - name: Install pthreads-emb
   sudo: yes
   shell: make -C platform/psp install
-    chdir={{ psplibraries_tmp_path }}/pthreads-emb
+  args:
+    chdir: "{{ psplibraries_tmp_path }}/pthreads-emb"
+    creates: "{{ psp_prefix }}/lib/libpthread-psp.a"
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
 
 - name: Install pthreads-emb headers
   sudo: yes
-  command: cp {{ psplibraries_tmp_path }}/pthreads-emb/{{ item }} {{ psp_prefix }}/include
+  command: cp {{ item }} {{ psp_prefix }}/include
+  args:
+    chdir: "{{ psplibraries_tmp_path }}/pthreads-emb"
+    creates: "{{ psp_prefix }}/include/{{ item }}"
   with_items:
     - 'implement.h'
     - 'need_errno.h'

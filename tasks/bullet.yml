@@ -1,21 +1,31 @@
 - name: Download bullet-{{ psplibraries_bullet_version }}
   get_url:
-    url=https://github.com/bulletphysics/bullet3/archive/{{ psplibraries_bullet_version }}.tar.gz
-    dest={{ psplibraries_tmp_path }}
+    url: https://github.com/bulletphysics/bullet3/archive/{{ psplibraries_bullet_version }}.tar.gz
+    dest: "{{ psplibraries_tmp_path }}"
+    sha256sum: dcd5448f31ded71c7bd22fddd7d816ac590ae7b97e1fdda8d1253f8ff3655571
 
 - name: Extract bullet-{{ psplibraries_bullet_version }}
   unarchive:
-    src={{ psplibraries_tmp_path }}/{{ psplibraries_bullet_version }}.tar.gz
-    dest={{ psplibraries_tmp_path }}
-    copy=no
+    src: "{{ psplibraries_tmp_path }}/{{ psplibraries_bullet_version }}.tar.gz"
+    dest: "{{ psplibraries_tmp_path }}"
+    copy: no
+    creates: "{{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}/CMakeLists.txt"
+
+- name: Apply bullet3-{{ psplibraries_bullet_version }}-PSP.patch
+  patch:
+    src: bullet3-{{ psplibraries_bullet_version }}-PSP.patch
+    basedir: "{{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}"
 
 - name: Configure bullet-{{ psplibraries_bullet_version }}
-  shell: . /etc/profile; psp-cmake -D CMAKE_INSTALL_PREFIX={{ psp_prefix }} -D BUILD_BULLET2_DEMOS=OFF -DBUILD_OPENGL3_DEMOS=OFF .
-    chdir={{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}
+  shell: . /etc/profile; psp-cmake -D CMAKE_INSTALL_PREFIX={{ psp_prefix }} -D BUILD_BULLET2_DEMOS=OFF -D BUILD_OPENGL3_DEMOS=OFF -D PSP=ON .
+  args:
+    chdir: "{{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}"
+    creates: "{{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}/Makefile"
 
 - name: Replace memory.h with string.h
-  shell: sed -i -e "s/memory\.h/string.h/" "{{ item }}/*.cpp" "{{ item }}/*.h"
-    chdir={{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}
+  shell: sed -i -e "s/memory.h/string.h/" {{ item }}/*.cpp {{ item }}/*.h
+  args:
+    chdir: "{{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}"
   with_items:
     - ./src/Bullet3Common
     - ./src/Bullet3Collision/BroadPhaseCollision
@@ -27,18 +37,18 @@
 
 - name: Compile bullet-{{ psplibraries_bullet_version }}
   shell: make -j {{ ansible_processor_vcpus }}
-    chdir={{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}
+  args:
+    chdir: "{{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}"
+    creates: "{{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}/src/Bullet3Common/libBullet3Common.a"
   environment:
+    SHELL: /bin/bash
     PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
 
 - name: Install bullet-{{ psplibraries_bullet_version }}
   sudo: yes
   shell: make -j {{ ansible_processor_vcpus }} install
-    chdir={{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}
+  args:
+    chdir: "{{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}"
+    creates: "{{ psp_prefix }}/lib/libBullet3Common.a"
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
-
-- name: Clean bullet-{{ psplibraries_bullet_version }}
-  file:
-    path={{ psplibraries_tmp_path }}/bullet3-{{ psplibraries_bullet_version }}
-    state=absent

@@ -1,0 +1,37 @@
+- name: Install dos2unix
+  apt: name=dos2unix update_cache=yes
+  sudo: yes
+
+- name: Download glew-{{ psplibraries_glew_version }}
+  get_url:
+    url=https://github.com/nigels-com/glew/archive/glew-{{ psplibraries_glew_version }}.tar.gz
+    dest={{ psplibraries_tmp_path }}
+
+- name: Extract glew-{{ psplibraries_glew_version }}
+  unarchive:
+    src={{ psplibraries_tmp_path }}/glew-{{ psplibraries_glew_version }}.tar.bz2
+    dest={{ psplibraries_tmp_path }}
+    copy=no
+
+- name: Configure glew-{{ psplibraries_glew_version }}
+  shell: make -j {{ ansible_processor_vcpus }} extensions
+    chdir={{ psplibraries_tmp_path }}/glew
+
+- name: Compile glew-{{ psplibraries_glew_version }}
+  shell: make -j {{ ansible_processor_vcpus }}
+    chdir={{ psplibraries_tmp_path }}/glew-{{ psplibraries_glew_version }}
+  environment:
+    SYSTEM: psp
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Install glew-{{ psplibraries_glew_version }}
+  sudo: yes
+  shell: make -j {{ ansible_processor_vcpus }} install
+    chdir={{ psplibraries_tmp_path }}/glew-{{ psplibraries_glew_version }}
+  environment:
+    PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
+
+- name: Clean glew-{{ psplibraries_glew_version }}
+  file:
+    path={{ psplibraries_tmp_path }}/glew-{{ psplibraries_glew_version }}
+    state=absent

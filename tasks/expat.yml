@@ -1,25 +1,29 @@
 - name: Download expat-{{ psplibraries_expat_version }}
   get_url:
-    url=http://sourceforge.net/projects/expat/files/expat/{{ psplibraries_expat_version }}/expat-{{ psplibraries_expat_version }}.tar.gz
-    dest={{ psplibraries_tmp_path }}
+    url: http://sourceforge.net/projects/expat/files/expat/{{ psplibraries_expat_version }}/expat-{{ psplibraries_expat_version }}.tar.gz
+    dest: "{{ psplibraries_tmp_path }}"
+    sha256sum: 823705472f816df21c8f6aa026dd162b280806838bb55b3432b0fb1fcca7eb86
 
 - name: Extract expat-{{ psplibraries_expat_version }}
   unarchive:
-    src={{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }}.tar.gz
-    dest={{ psplibraries_tmp_path }}
-    copy=no
+    src: "{{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }}.tar.gz"
+    dest: "{{ psplibraries_tmp_path }}"
+    copy: no
+    creates: "{{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }}"
 
 - name: Copy config.sub file
   copy:
-    src=config.sub
-    dest={{ psplibraries_tmp_path }}//expat-{{ psplibraries_expat_version }}/{{ item }}
+    src: config.sub
+    dest: "{{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }}/{{ item }}"
   with_items:
     - config.sub
     - conftools/config.sub
 
 - name: Configure expat-{{ psplibraries_expat_version }}
   shell: ./configure --host={{ target }} --prefix={{ pspdev_path }}
-    chdir={{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }}
+  args:
+    chdir: "{{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }}"
+    creates: "{{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }}/Makefile"
   environment:
     LDFLAGS: -L{{ pspsdk_path }}/lib -L{{ psp_prefix }}/lib -lc -lpspuser
     LIBS: -lc -lpspuser
@@ -27,18 +31,17 @@
 
 - name: Compile expat-{{ psplibraries_expat_version }}
   shell: make -j {{ ansible_processor_vcpus }}
-    chdir={{ psplibraries_tmp_path }}/sdk/angelscript/projects/cmake
+  args:
+    chdir: "{{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }}"
+    creates: "{{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }}/libexpat.la"
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
 
 - name: Install expat-{{ psplibraries_expat_version }}
   sudo: yes
-  shell: make -j {{ ansible_processor_vcpus }} install; make clean
-    chdir={{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }}
+  shell: make -j {{ ansible_processor_vcpus }} install
+  args:
+    chdir: "{{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }}"
+    creates: "{{ pspdev_path }}/lib/libexpat.a"
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
-
-- name: Clean expat-{{ psplibraries_expat_version }}
-  file:
-    path={{ psplibraries_tmp_path }}/expat-{{ psplibraries_expat_version }}
-    state=absent

@@ -1,14 +1,17 @@
 - name: Get PSP prefix of PSP-hosted software
   shell: . /etc/profile; psp-config --psp-prefix
   register: psp_prefix_result
+  changed_when: False
 
 - name: Get PSP base install directory
   shell: . /etc/profile;  psp-config --pspdev-path
   register: pspdev_path_result
+  changed_when: False
 
 - name: Get PSP base directory of PSPSDK
   shell: . /etc/profile;  psp-config --pspsdk-path
   register: pspsdk_path_result
+  changed_when: False
 
 - name: Set the facts for the other tasks
   set_fact:

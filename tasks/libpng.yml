@@ -1,23 +1,27 @@
 - name: Download libpng-{{ psplibraries_libpng_version }}
   get_url:
-    url=http://sourceforge.net/projects/libpng/files/libpng15/older-releases/{{ psplibraries_libpng_version }}/libpng-{{ psplibraries_libpng_version }}.tar.gz
-    dest={{ psplibraries_tmp_path }}
+    url: http://sourceforge.net/projects/libpng/files/libpng15/older-releases/{{ psplibraries_libpng_version }}/libpng-{{ psplibraries_libpng_version }}.tar.gz
+    dest: "{{ psplibraries_tmp_path }}"
+    sha256sum: 7d6431388f67b48f20242d2623e1aaa99e1c7cab5d2d699742d0e4ac987e8241
 
 - name: Extract libpng-{{ psplibraries_libpng_version }}
   unarchive:
-    src={{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}.tar.gz
-    dest={{ psplibraries_tmp_path }}
-    copy=no
+    src: "{{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}.tar.gz"
+    dest: "{{ psplibraries_tmp_path }}"
+    copy: no
+    creates: "{{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}/Makefile.in"
 
 - name: Apply libpng-{{ psplibraries_libpng_version }}-PSP patch
   patch:
-    src=libpng-{{ psplibraries_libpng_version }}-PSP.patch
-    basedir={{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}
-    strip=1
+    src: libpng-{{ psplibraries_libpng_version }}-PSP.patch
+    basedir: "{{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}"
+    strip: 1
 
 - name: Configure libpng-{{ psplibraries_libpng_version }}
   shell: ./configure --host={{ target }} --prefix={{ pspdev_path }}
-    chdir={{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}
+  args:
+    chdir: "{{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}"
+    creates: "{{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}/Makefile"
   environment:
     LDFLAGS: -L{{ pspsdk_path }}/lib -L{{ psp_prefix }}/lib -lc -lpspuser
     LIBS: -lc -lpspuser
@@ -25,18 +29,17 @@
 
 - name: Compile libpng-{{ psplibraries_libpng_version }}
   shell: make -j {{ ansible_processor_vcpus }}
-    chdir={{ psplibraries_tmp_path }}/sdk/angelscript/projects/cmake
+  args:
+    chdir: "{{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}"
+    creates: "{{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}/libpng.a"
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
 
 - name: Install libpng-{{ psplibraries_libpng_version }}
   sudo: yes
-  shell: make -j {{ ansible_processor_vcpus }} install; make clean
-    chdir={{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}
+  shell: make -j {{ ansible_processor_vcpus }} install
+  args:
+    chdir: "{{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}"
+    creates: "{{ psp_prefix }}/lib/libpng.a"
   environment:
     PATH: "{{ ansible_env.PATH }}:{{ pspdev_path }}/bin"
-
-- name: Clean libpng-{{ psplibraries_libpng_version }}
-  file:
-    path={{ psplibraries_tmp_path }}/libpng-{{ psplibraries_libpng_version }}
-    state=absent

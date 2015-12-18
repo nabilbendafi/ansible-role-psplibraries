@@ -1,0 +1,7 @@
+- name: Download Chipmunk2D
+  git:
+    repo: git://github.com/slembcke/Chipmunk2D
+    dest: "{{ psplibraries_tmp_path }}/Chipmunk2D"
+    accept_hostkey: yes
+    force: yes
+
