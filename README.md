@@ -9,7 +9,7 @@ Installation
 ------------
 
 ```
-$ ansible-galaxy install nabilbendafi.ansible-role-psplibraries 
+$ ansible-galaxy install nabilbendafi.psplibraries
 ```
 
 ```
